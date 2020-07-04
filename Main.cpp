@@ -45,13 +45,15 @@ void Main() {
 
     do {
         selected_meigens = meigens.choice(20);
+        drawable_texts.clear();
+        content_rects.clear();
         for (const auto& meigen : selected_meigens) {
             DrawableText d_text = fonts.choice()(meigen.content);
             drawable_texts << d_text;
             content_rects << d_text.region();
         }
         pack = RectanglePacking::Pack(content_rects, 1200);
-    } while (pack.first.empty());
+    } while (pack.second.isZero());
 
     while (System::Update()) {
         Rect(pack.second).drawFrame(0.0, 1.0, Palette::Black);
@@ -62,6 +64,11 @@ void Main() {
 
         if (KeySpace.down()) {
             ScreenCapture::RequestCurrentFrame();
+        }
+
+        if (ScreenCapture::HasNewFrame()) {
+            const Image clipped_screen = ScreenCapture::GetFrame().clipped(Rect(0, 0, pack.second));
+            clipped_screen.savePNG(U"meigen.png");
         }
     }
 }
