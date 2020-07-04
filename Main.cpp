@@ -6,8 +6,10 @@ struct Meigen {
     String content;
 };
 
-
 void Main() {
+    Window::Resize(1600, 900);
+    Scene::SetBackground(Palette::White);
+
     const JSONReader meigens_json(U"meigens.json");
 
     if (!meigens_json) {
@@ -29,15 +31,37 @@ void Main() {
         }
     }
 
-    while (System::Update()) {
-        ClearPrint();
 
-        for (const auto& meigen : meigens) {
-            Print << U"{";
-            Print << U"\t id : {}"_fmt(meigen.id);
-            Print << U"\t id : {}"_fmt(meigen.author);
-            Print << U"\t id : {}"_fmt(meigen.content);
-            Print << U"}";
+    const Array<Font> fonts = {
+        Font(20),
+        Font(30),
+        Font(40)
+    };
+
+    Array<Meigen> selected_meigens;
+    Array<DrawableText> drawable_texts;
+    Array<Rect> content_rects;
+    std::pair<Array<Rect>, Size> pack;
+
+    do {
+        selected_meigens = meigens.choice(20);
+        for (const auto& meigen : selected_meigens) {
+            DrawableText d_text = fonts.choice()(meigen.content);
+            drawable_texts << d_text;
+            content_rects << d_text.region();
+        }
+        pack = RectanglePacking::Pack(content_rects, 1200);
+    } while (pack.first.empty());
+
+    while (System::Update()) {
+        Rect(pack.second).drawFrame(0.0, 1.0, Palette::Black);
+
+        for (auto [i, rect] : Indexed(pack.first)) {
+            drawable_texts[i].draw(rect.pos, Palette::Black);
+        }
+
+        if (KeySpace.down()) {
+            ScreenCapture::RequestCurrentFrame();
         }
     }
 }
