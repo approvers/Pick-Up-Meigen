@@ -69,6 +69,7 @@ void Main() {
         if (ScreenCapture::HasNewFrame()) {
             const Image clipped_screen = ScreenCapture::GetFrame().clipped(Rect(0, 0, pack.second));
             clipped_screen.savePNG(U"meigen.png");
+            Clipboard::SetImage(clipped_screen);
         }
     }
 }
